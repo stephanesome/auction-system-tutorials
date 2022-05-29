@@ -19,7 +19,11 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+	testImplementation("org.junit.platform:junit-platform-suite:1.8.2")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("io.cucumber:cucumber-java8:7.3.3")
+	testImplementation("io.cucumber:cucumber-spring:7.3.3")
+	testImplementation("io.cucumber:cucumber-junit-platform-engine:7.3.3")
 }
 
 tasks.withType<KotlinCompile> {
