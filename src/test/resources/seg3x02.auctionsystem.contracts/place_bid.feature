@@ -5,6 +5,7 @@ Feature: Buyer place bid on an auction
     And the auction is active
     And bid information is provided
     When the application command placeBid is executed
-    Then a new bid is created with attributes matching the bid information
+    Then a new bid is created
+    And the new is initialized from the bid information
     And the new bid is added to the auction bids
     And the new bid is added to the buyer bids
