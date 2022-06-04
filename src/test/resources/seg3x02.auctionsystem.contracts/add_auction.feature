@@ -7,6 +7,7 @@ Feature: Add new auction by Seller.
     When the application command addAuction is invoked
     Then a new auction is created
     And the new auction is initialized from the auction information
+    And the new auction processing fee has been set
     And the new auction is added to the seller's auctions
     And a new item is created
     And the new item is initialized from the auction information
@@ -19,6 +20,7 @@ Feature: Add new auction by Seller.
     When the application command addAuction is invoked
     Then a new auction is created
     And the new auction is initialized from the auction information
+    And the new auction processing fee has been set
     And the new auction is added to the seller's auctions
     And a new item is created
     And the new item is initialized from the auction information

@@ -2,7 +2,7 @@ Feature: Buyer place bid on an auction
   Scenario 1: Buyer is signed in, Buyer has no Pending Payment
     Given the buyer is signed in
     And the buyer has no pending payment
-    And the auction is active
+    And the auction is open
     And bid information is provided
     When the application command placeBid is executed
     Then a new bid is created
