@@ -12,4 +12,6 @@ class UserAccount(
     lateinit var role: UserRole
     var pendingPayment: PendingPayment? = null
     val auctions: MutableList<UUID> = ArrayList()
+    var bids: MutableList<UUID> = ArrayList()
+    var active: Boolean = true
 }

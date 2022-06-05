@@ -11,8 +11,12 @@ class Auction(
     val duration: Duration,
     val startPrice: BigDecimal,
     val minIncrement: BigDecimal,
-    val category: AuctionCategory
+    val seller: String,
+    val category: AuctionCategory,
+    var isclosed: Boolean
 ) {
     lateinit var item: UUID
+    lateinit var fee: BigDecimal
+    val bids: MutableList<UUID> = ArrayList()
 }
 
