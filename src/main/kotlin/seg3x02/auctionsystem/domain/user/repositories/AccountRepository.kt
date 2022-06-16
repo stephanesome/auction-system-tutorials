@@ -5,4 +5,5 @@ import java.util.*
 
 interface AccountRepository {
     fun find(userId: String): UserAccount?
+    fun save(account: UserAccount): UserAccount
 }

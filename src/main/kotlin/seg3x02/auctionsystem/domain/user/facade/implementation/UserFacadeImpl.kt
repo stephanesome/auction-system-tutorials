@@ -17,23 +17,33 @@ class UserFacadeImpl(
     private var eventEmitter: DomainEventEmitter): UserFacade {
 
     override fun addCreditCard(userId: String, creditCardInfo: CreditCardCreateDto) {
-        val creditCard = creditCardFactory.createCreditCard(creditCardInfo)
-        creditCardRepository.save(creditCard)
-        eventEmitter.emit(CreditCardCreated(UUID.randomUUID(), Date(), creditCard.number))
+        val creditCard = createCreditCard(creditCardInfo)
         val user = accountRepository.find(userId)
         user?.setCreditCard(creditCard)
     }
 
-    override fun hasPendingPayment(seller: String): Boolean {
-        TODO("Not yet implemented")
+    private fun createCreditCard(creditCardInfo: CreditCardCreateDto): CreditCard {
+        val creditCard = creditCardFactory.createCreditCard(creditCardInfo)
+        creditCardRepository.save(creditCard)
+        eventEmitter.emit(CreditCardCreated(UUID.randomUUID(), Date(), creditCard.number))
+        return creditCard
     }
 
-    override fun getCreditCardNumber(seller: String): String? {
-        TODO("Not yet implemented")
+    override fun hasPendingPayment(userId: String): Boolean {
+        val user = accountRepository.find(userId)
+        return if (user == null) false else user.pendingPayment != null
     }
 
-    override fun addAuctionToSeller(seller: String, auctionId: UUID) {
-        TODO("Not yet implemented")
+    override fun getCreditCardNumber(userId: String): String? {
+        return accountRepository.find(userId)?.creditCardNumber
+    }
+
+    override fun addAuctionToSeller(userId: String, auctionId: UUID) {
+        val user = accountRepository.find(userId)
+        if (user != null) {
+            user.auctions.add(auctionId)
+            accountRepository.save(user)
+        }
     }
 
 }
