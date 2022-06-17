@@ -1,9 +1,9 @@
 package seg3x02.auctionsystem.contracts.steps
 
 import io.cucumber.java8.En
-import io.cucumber.java8.PendingException
 import org.assertj.core.api.Assertions
 import seg3x02.auctionsystem.application.dtos.queries.AuctionCreateDto
+import seg3x02.auctionsystem.application.dtos.queries.CreditCardCreateDto
 import seg3x02.auctionsystem.application.dtos.queries.ItemCreateDto
 import seg3x02.auctionsystem.application.usecases.CreateAuction
 import seg3x02.auctionsystem.application.usecases.implementation.CreateAuctionImpl
@@ -15,12 +15,14 @@ import seg3x02.auctionsystem.contracts.testStubs.repositories.AuctionRepositoryS
 import seg3x02.auctionsystem.contracts.testStubs.repositories.CreditCardRepositoryStub
 import seg3x02.auctionsystem.contracts.testStubs.repositories.ItemRepositoryStub
 import seg3x02.auctionsystem.contracts.testStubs.services.AuctionFeeCalculatorStub
+import seg3x02.auctionsystem.contracts.testStubs.services.CreditServiceStub
 import seg3x02.auctionsystem.contracts.testStubs.services.EventEmitterStub
 import seg3x02.auctionsystem.domain.auction.entities.Auction
 import seg3x02.auctionsystem.domain.auction.facade.implementation.AuctionFacadeImpl
 import seg3x02.auctionsystem.domain.item.entities.Item
 import seg3x02.auctionsystem.domain.item.facade.implementation.ItemFacadeImpl
 import seg3x02.auctionsystem.domain.user.entities.account.UserAccount
+import seg3x02.auctionsystem.domain.user.entities.creditCard.CreditCard
 import seg3x02.auctionsystem.domain.user.facade.implementation.UserFacadeImpl
 import java.math.BigDecimal
 import java.util.*
@@ -34,15 +36,19 @@ class CreateAuctionStepDefs: En {
     private var creditCardFactory = CreditCardFactoryStub()
     private var itemFactory = ItemFactoryStub()
     private var eventEmitter = EventEmitterStub()
+    private var creditService = CreditServiceStub()
     private var auctionFeeCalculator = AuctionFeeCalculatorStub()
 
     lateinit var seller: UserAccount
     lateinit var itemInfo: ItemCreateDto
     lateinit var auctionInfo: AuctionCreateDto
-    var newAucId: UUID? = null
-    var newauction: Auction? = null
-    var newItemId: UUID? = null
-    var newItem: Item? = null
+    lateinit var creditCardInfo: CreditCardCreateDto
+    private var newAucId: UUID? = null
+    private var newauction: Auction? = null
+    private var newItemId: UUID? = null
+    private var newItem: Item? = null
+    private var newCCnum: String? = null
+    private var newCC: CreditCard? = null
 
     init {
         Given("the seller is signed in") {
@@ -66,12 +72,17 @@ class CreateAuctionStepDefs: En {
         ) {
             Assertions.assertThat(auctionInfo.creditCardInfo).isNull()
         }
-        Given("the auction information includes credit card information") { throw PendingException() }
+        Given("the auction information includes credit card information") {
+            creditCardInfo = setCreditCardInfo()
+            auctionInfo.creditCardInfo = creditCardInfo
+            Assertions.assertThat(auctionInfo.creditCardInfo).isNotNull
+        }
         When("the application command addAuction is invoked") {
             val userFacade = UserFacadeImpl(accountRepository,
                                             creditCardRepository,
                                             creditCardFactory,
-                                            eventEmitter)
+                                            eventEmitter,
+                                            creditService)
             val itemFacade = ItemFacadeImpl(itemFactory,
                                             itemRepository,
                                             eventEmitter)
@@ -100,7 +111,7 @@ class CreateAuctionStepDefs: En {
             Assertions.assertThat(seller.auctions.contains(newAucId)).isTrue()
         }
         Then("a new item is created") {
-            newItemId = eventEmitter.retrieveNewItemAddedEvent()?.itemId
+            newItemId = eventEmitter.retrieveNewItemAddedEvent().itemId
             Assertions.assertThat(newItemId).isNotNull
         }
         Then("the new item is initialized from the auction information") {
@@ -112,11 +123,21 @@ class CreateAuctionStepDefs: En {
         Then("the new auction is linked to the new item") {
             Assertions.assertThat(newauction?.item).isEqualTo(newItemId)
         }
-        Then("a new credit card is created") { throw PendingException() }
+        Then("a new credit card is created") {
+            newCCnum = eventEmitter.retrieveCreditCardCreatedEvent().creditCardNumber
+            Assertions.assertThat(newCCnum).isNotNull
+        }
         Then(
             "the new credit card is initialized from the credit card information"
-        ) { throw PendingException() }
-        Then("the new credit card is set as the seller credit card") { throw PendingException() }
-
+        ) {
+            newCC = newCCnum?.let { creditCardRepository.find(it) }
+            Assertions.assertThat(newCC).isNotNull
+            Assertions.assertThat(newCC?.number).isEqualTo(creditCardInfo.number)
+            Assertions.assertThat(newCC?.accountFirstname).isEqualTo(creditCardInfo.accountFirstname)
+            Assertions.assertThat(newCC?.accountAddress?.city).isEqualTo(creditCardInfo.accountAddress.city)
+        }
+        Then("the new credit card is set as the seller credit card") {
+            Assertions.assertThat(seller.creditCardNumber).isEqualTo(newCC?.number)
+        }
     }
 }

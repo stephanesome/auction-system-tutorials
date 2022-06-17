@@ -11,4 +11,6 @@ class CreditCardRepositoryStub : CreditCardRepository {
         cCards[creditCard.number] = creditCard
         return creditCard
     }
+
+    override fun find(ccNumber: String): CreditCard? = cCards[ccNumber]
 }

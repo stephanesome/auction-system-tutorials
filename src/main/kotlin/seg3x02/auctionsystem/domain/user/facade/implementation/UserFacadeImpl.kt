@@ -1,6 +1,7 @@
 package seg3x02.auctionsystem.domain.user.facade.implementation
 
 import seg3x02.auctionsystem.application.dtos.queries.CreditCardCreateDto
+import seg3x02.auctionsystem.application.services.CreditService
 import seg3x02.auctionsystem.application.services.DomainEventEmitter
 import seg3x02.auctionsystem.domain.user.entities.creditCard.CreditCard
 import seg3x02.auctionsystem.domain.user.events.CreditCardCreated
@@ -14,12 +15,13 @@ class UserFacadeImpl(
     private val accountRepository: AccountRepository,
     private val creditCardRepository: CreditCardRepository,
     private var creditCardFactory: CreditCardFactory,
-    private var eventEmitter: DomainEventEmitter): UserFacade {
+    private var eventEmitter: DomainEventEmitter,
+    private var creditService: CreditService): UserFacade {
 
     override fun addCreditCard(userId: String, creditCardInfo: CreditCardCreateDto) {
         val creditCard = createCreditCard(creditCardInfo)
         val user = accountRepository.find(userId)
-        user?.setCreditCard(creditCard)
+        user?.setCreditCard(creditCard, eventEmitter, creditService)
     }
 
     private fun createCreditCard(creditCardInfo: CreditCardCreateDto): CreditCard {
