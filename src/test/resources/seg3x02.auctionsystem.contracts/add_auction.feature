@@ -1,7 +1,8 @@
 Feature: Add new auction by Seller.
-  Scenario 1: Seller is signed in, Seller has no Pending Payment, Auction information doesn't include Credit card information
+  Scenario: Seller is signed in, Seller has no Pending Payment, Auction information doesn't include Credit card information
     Given the seller is signed in
     And the seller has no pending payment
+    And the seller has a credit card
     And auction information is provided
     And the auction information does not include credit card information
     When the application command addAuction is invoked
@@ -12,7 +13,7 @@ Feature: Add new auction by Seller.
     And a new item is created
     And the new item is initialized from the auction information
     And the new auction is linked to the new item
-  Scenario 2: Seller is signed in, Seller has no Pending Payment, Auction information includes Credit card information
+  Scenario: Seller is signed in, Seller has no Pending Payment, Auction information includes Credit card information
     Given the seller is signed in
     And the seller has no pending payment
     And auction information is provided

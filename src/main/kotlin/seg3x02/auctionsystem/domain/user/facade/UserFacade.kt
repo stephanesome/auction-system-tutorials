@@ -4,8 +4,8 @@ import seg3x02.auctionsystem.application.dtos.queries.CreditCardCreateDto
 import java.util.*
 
 interface UserFacade {
-    fun addCreditCard(seller: String, ccInfo: CreditCardCreateDto)
-    fun hasPendingPayment(seller: String): Boolean
-    fun getCreditCardNumber(seller: String): String?
-    fun addAuctionToSeller(seller: String, auctionId: UUID)
+    fun addCreditCard(userId: String, creditCardInfo: CreditCardCreateDto)
+    fun hasPendingPayment(userId: String): Boolean
+    fun getCreditCardNumber(userId: String): String?
+    fun addAuctionToSeller(userId: String, auctionId: UUID)
 }

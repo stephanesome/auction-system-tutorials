@@ -5,6 +5,6 @@ import java.math.BigDecimal
 import java.util.*
 
 interface AuctionFacade {
-    fun addAuction(auctionInfo: AuctionCreateDto, aucItemId: Any): UUID
+    fun addAuction(auctionInfo: AuctionCreateDto, aucItemId: UUID): UUID
     fun setAuctionFee(auctionId: UUID, fee: BigDecimal)
 }
