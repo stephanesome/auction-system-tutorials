@@ -20,6 +20,10 @@ class UserAccount(
     var bids: MutableList<UUID> = ArrayList()
     var active: Boolean = true
 
+    fun addBid(bidId: UUID) {
+        bids.add(bidId)
+    }
+
     fun setCreditCard(
         creditCard: CreditCard,
         eventEmitter: DomainEventEmitter,

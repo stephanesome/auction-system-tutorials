@@ -1,5 +1,5 @@
 Feature: Buyer place bid on an auction
-  Scenario 1: Buyer is signed in, Buyer has no Pending Payment
+  Scenario: Buyer is signed in, Buyer has no Pending Payment
     Given the buyer is signed in
     And the buyer has no pending payment
     And the auction is open

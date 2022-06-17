@@ -3,6 +3,8 @@ package seg3x02.auctionsystem.domain.user.facade.implementation
 import seg3x02.auctionsystem.application.dtos.queries.CreditCardCreateDto
 import seg3x02.auctionsystem.application.services.CreditService
 import seg3x02.auctionsystem.application.services.DomainEventEmitter
+import seg3x02.auctionsystem.domain.auction.events.NewAuctionBidRegistered
+import seg3x02.auctionsystem.domain.user.entities.account.PendingPayment
 import seg3x02.auctionsystem.domain.user.entities.creditCard.CreditCard
 import seg3x02.auctionsystem.domain.user.events.CreditCardCreated
 import seg3x02.auctionsystem.domain.user.facade.UserFacade
@@ -45,6 +47,24 @@ class UserFacadeImpl(
         if (user != null) {
             user.auctions.add(auctionId)
             accountRepository.save(user)
+        }
+    }
+
+    override fun getPendingPayment(userId: String): PendingPayment? {
+        val user = accountRepository.find(userId)
+        return user?.pendingPayment
+    }
+
+    override fun addBidToAccount(userId: String, bidId: UUID) {
+        val user = accountRepository.find(userId)
+        if (user != null) {
+            user.addBid(bidId)
+            val addBidEvent = NewAuctionBidRegistered(
+                UUID.randomUUID(),
+                Date(),
+                bidId,
+                userId)
+            eventEmitter.emit(addBidEvent)
         }
     }
 
