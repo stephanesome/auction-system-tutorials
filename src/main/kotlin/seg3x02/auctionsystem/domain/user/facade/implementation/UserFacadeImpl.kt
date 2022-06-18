@@ -1,5 +1,6 @@
 package seg3x02.auctionsystem.domain.user.facade.implementation
 
+import seg3x02.auctionsystem.application.dtos.queries.AccountCreateDto
 import seg3x02.auctionsystem.application.dtos.queries.CreditCardCreateDto
 import seg3x02.auctionsystem.application.services.CreditService
 import seg3x02.auctionsystem.application.services.DomainEventEmitter
@@ -7,7 +8,9 @@ import seg3x02.auctionsystem.domain.auction.events.NewAuctionBidRegistered
 import seg3x02.auctionsystem.domain.user.entities.account.PendingPayment
 import seg3x02.auctionsystem.domain.user.entities.creditCard.CreditCard
 import seg3x02.auctionsystem.domain.user.events.CreditCardCreated
+import seg3x02.auctionsystem.domain.user.events.UserAccountCreated
 import seg3x02.auctionsystem.domain.user.facade.UserFacade
+import seg3x02.auctionsystem.domain.user.factories.AccountFactory
 import seg3x02.auctionsystem.domain.user.factories.CreditCardFactory
 import seg3x02.auctionsystem.domain.user.repositories.AccountRepository
 import seg3x02.auctionsystem.domain.user.repositories.CreditCardRepository
@@ -16,6 +19,7 @@ import java.util.*
 
 class UserFacadeImpl(
     private val accountRepository: AccountRepository,
+    private val accountFactory: AccountFactory,
     private val creditCardRepository: CreditCardRepository,
     private var creditCardFactory: CreditCardFactory,
     private var eventEmitter: DomainEventEmitter,
@@ -25,6 +29,27 @@ class UserFacadeImpl(
         val creditCard = createCreditCard(creditCardInfo)
         val user = accountRepository.find(userId)
         user?.setCreditCard(creditCard, eventEmitter, creditService)
+    }
+
+    override fun createAccount(accountInfo: AccountCreateDto): Boolean {
+        val userId = accountInfo.userName
+        val existAccount = accountRepository.find(userId)
+        if (existAccount != null) {
+            return false
+        }
+        val userAccount = accountFactory.createAccount(accountInfo)
+        val ccInfo = accountInfo.creditCardInfo
+        if (ccInfo != null) {
+            val ccCard = createCreditCard(ccInfo)
+            userAccount.setCreditCard(ccCard, eventEmitter, creditService)
+        }
+        accountRepository.save(userAccount)
+        eventEmitter.emit(
+            UserAccountCreated(UUID.randomUUID(),
+                Date(),
+                userAccount.id)
+        )
+        return true
     }
 
     private fun createCreditCard(creditCardInfo: CreditCardCreateDto): CreditCard {
