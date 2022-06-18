@@ -1,9 +1,10 @@
 package seg3x02.auctionsystem.contracts.steps
 
-import seg3x02.auctionsystem.application.dtos.queries.AddressCreateDto
-import seg3x02.auctionsystem.application.dtos.queries.AuctionCreateDto
-import seg3x02.auctionsystem.application.dtos.queries.CreditCardCreateDto
-import seg3x02.auctionsystem.application.dtos.queries.ItemCreateDto
+import seg3x02.auctionsystem.application.dtos.queries.*
+import seg3x02.auctionsystem.domain.auction.entities.Auction
+import seg3x02.auctionsystem.domain.auction.entities.AuctionCategory
+import seg3x02.auctionsystem.domain.auction.repositories.AuctionRepository
+import seg3x02.auctionsystem.domain.item.entities.Item
 import seg3x02.auctionsystem.domain.user.entities.account.UserAccount
 import seg3x02.auctionsystem.domain.user.entities.creditCard.CreditCard
 import seg3x02.auctionsystem.domain.user.repositories.AccountRepository
@@ -12,6 +13,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.Month
 import java.time.Year
+import java.util.*
 
 fun createAccount(accountRepository: AccountRepository): UserAccount {
     val acc = UserAccount("userXXX",
@@ -56,4 +58,28 @@ fun setCreditCardInfo(): CreditCardCreateDto {
         "Tata",
         addr
     )
+}
+
+fun createAuction(auctionRepository: AuctionRepository): Auction {
+    val auctionId = UUID.randomUUID()
+    val auction = Auction(auctionId,
+        LocalDateTime.now(),
+        Duration.ofDays(3),
+        BigDecimal(100),
+        BigDecimal(5),
+        "sellerXXX",
+        AuctionCategory("Toy"),
+        false
+    )
+    val itemId = UUID.randomUUID()
+    val item = Item(itemId,
+        "Toy",
+        "Very rare")
+    auction.item = itemId
+    auctionRepository.save(auction)
+    return auction
+}
+
+fun setBidInfo(buyerId: String): BidCreateDto {
+    return BidCreateDto(BigDecimal(100.00), LocalDateTime.now(), buyerId)
 }
