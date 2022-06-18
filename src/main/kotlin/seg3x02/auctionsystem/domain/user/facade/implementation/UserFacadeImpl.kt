@@ -11,6 +11,7 @@ import seg3x02.auctionsystem.domain.user.facade.UserFacade
 import seg3x02.auctionsystem.domain.user.factories.CreditCardFactory
 import seg3x02.auctionsystem.domain.user.repositories.AccountRepository
 import seg3x02.auctionsystem.domain.user.repositories.CreditCardRepository
+import java.math.BigDecimal
 import java.util.*
 
 class UserFacadeImpl(
@@ -53,6 +54,22 @@ class UserFacadeImpl(
     override fun getPendingPayment(userId: String): PendingPayment? {
         val user = accountRepository.find(userId)
         return user?.pendingPayment
+    }
+
+    override fun getUserEmailAddress(userId: String): String? {
+        return accountRepository.find(userId)?.email
+    }
+
+    override fun getUserCreditCard(userId: String): CreditCard? {
+        val ccNumber = this.getCreditCardNumber(userId)
+        return if (ccNumber != null) {
+            creditCardRepository.find(ccNumber)
+        } else null
+    }
+
+    override fun addPendingPayment(userId: String, amt: BigDecimal) {
+        val user = accountRepository.find(userId)
+        user?.addPendingPayment(amt)
     }
 
     override fun addBidToAccount(userId: String, bidId: UUID) {

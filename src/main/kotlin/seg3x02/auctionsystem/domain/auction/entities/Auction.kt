@@ -10,10 +10,10 @@ import java.util.*
 
 class Auction(
     val id: UUID,
-    val startTime: LocalDateTime,
+    private val startTime: LocalDateTime,
     val duration: Duration,
-    val startPrice: BigDecimal,
-    val minIncrement: BigDecimal,
+    private val startPrice: BigDecimal,
+    private val minIncrement: BigDecimal,
     val seller: String,
     val category: AuctionCategory,
     var isclosed: Boolean
@@ -47,5 +47,17 @@ class Auction(
         return newBid.id
     }
 
+    fun close(): UUID? {
+        isclosed = true
+        return bids.lastOrNull()
+    }
+
+    fun getBidder(bidId: UUID, bidRepository: BidRepository): String? {
+        return bidRepository.find(bidId)?.buyer
+    }
+
+    fun closeTime(): LocalDateTime {
+        return startTime.plus(duration)
+    }
 }
 

@@ -3,6 +3,7 @@ package seg3x02.auctionsystem.domain.auction.facade.implementation
 import seg3x02.auctionsystem.application.dtos.queries.AuctionCreateDto
 import seg3x02.auctionsystem.application.dtos.queries.BidCreateDto
 import seg3x02.auctionsystem.application.services.DomainEventEmitter
+import seg3x02.auctionsystem.domain.auction.events.AuctionClosed
 import seg3x02.auctionsystem.domain.auction.events.NewAuctionAdded
 import seg3x02.auctionsystem.domain.auction.events.NewBidCreated
 import seg3x02.auctionsystem.domain.auction.facade.AuctionFacade
@@ -27,11 +28,38 @@ class AuctionFacadeImpl(
         return auction.id
     }
 
+    override fun closeAuction(auctionId: UUID): String? {
+        val auc = auctionRepository.find(auctionId)
+        if (auc != null) {
+            val winnerBidId = auc.close()
+            auctionRepository.save(auc)
+            eventEmitter.emit(
+                AuctionClosed(UUID.randomUUID(),
+                    Date(),
+                    auc.id,
+                    winnerBidId)
+            )
+            if (winnerBidId != null) {
+                return auc.getBidder(winnerBidId, bidRepository)
+            }
+        }
+        return null
+    }
+
+    override fun getAuctionSeller(auctionId: UUID): String? {
+        return auctionRepository.find(auctionId)?.seller
+    }
+
     override fun setAuctionFee(auctionId: UUID, fee: BigDecimal) {
         val auction = auctionRepository.find(auctionId)
         if (auction != null) {
             auction.fee = fee
         }
+    }
+
+    override fun getAuctionFee(auctionId: UUID): BigDecimal? {
+        val auction = auctionRepository.find(auctionId)
+        return auction?.fee
     }
 
     override fun placeBid(auctionId: UUID, bidInfo: BidCreateDto): UUID? {

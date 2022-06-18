@@ -7,6 +7,9 @@ import java.util.*
 
 interface AuctionFacade {
     fun addAuction(auctionInfo: AuctionCreateDto, aucItemId: UUID): UUID
-    fun setAuctionFee(auctionId: UUID, fee: BigDecimal)
+    fun closeAuction(auctionId: UUID): String?
+    fun getAuctionSeller(auctionId: UUID): String?
     fun placeBid(auctionId: UUID, bidInfo: BidCreateDto): UUID?
+    fun setAuctionFee(auctionId: UUID, fee: BigDecimal)
+    fun getAuctionFee(auctionId: UUID): BigDecimal?
 }

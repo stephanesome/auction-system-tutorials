@@ -3,11 +3,15 @@ package seg3x02.auctionsystem.contracts.steps
 import seg3x02.auctionsystem.application.dtos.queries.*
 import seg3x02.auctionsystem.domain.auction.entities.Auction
 import seg3x02.auctionsystem.domain.auction.entities.AuctionCategory
+import seg3x02.auctionsystem.domain.auction.factories.BidFactory
 import seg3x02.auctionsystem.domain.auction.repositories.AuctionRepository
+import seg3x02.auctionsystem.domain.auction.repositories.BidRepository
 import seg3x02.auctionsystem.domain.item.entities.Item
 import seg3x02.auctionsystem.domain.user.entities.account.UserAccount
+import seg3x02.auctionsystem.domain.user.entities.creditCard.Address
 import seg3x02.auctionsystem.domain.user.entities.creditCard.CreditCard
 import seg3x02.auctionsystem.domain.user.repositories.AccountRepository
+import seg3x02.auctionsystem.domain.user.repositories.CreditCardRepository
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.LocalDateTime
@@ -25,8 +29,48 @@ fun createAccount(accountRepository: AccountRepository): UserAccount {
     return acc
 }
 
-fun addCreditCardToAccount(account: UserAccount) {
-    account.creditCardNumber = "55555555"
+fun createAccountWithCC(accountRepository: AccountRepository,
+                        creditCardRepository: CreditCardRepository): UserAccount {
+    // create seller
+    val sellerId = "sellerId"
+    val seller = UserAccount(sellerId,
+        "Toto",
+        "Tata",
+        "passwd",
+        "toto@somewhere.com"
+    )
+    val sellercc = CreditCard("5555555",
+        Month.JUNE,
+        Year.parse("2024"),
+        "Toto",
+        "Tata",
+        Address(
+            "125 DeLa Rue",
+            "Ottawa",
+            "Canada",
+            "K0K0K0")
+    )
+    creditCardRepository.save(sellercc)
+    seller.creditCardNumber = sellercc.number
+    accountRepository.save(seller)
+    return seller
+}
+
+fun addCreditCardToAccount(account: UserAccount,
+            creditCardRepository: CreditCardRepository) {
+    val cc = CreditCard("5555555",
+        Month.JUNE,
+        Year.parse("2024"),
+        "Toto",
+        "Tata",
+        Address(
+            "125 DeLa Rue",
+            "Ottawa",
+            "Canada",
+            "K0K0K0")
+    )
+    creditCardRepository.save(cc)
+    account.creditCardNumber = cc.number
 }
 
 fun setItemInfo(): ItemCreateDto {
@@ -76,6 +120,38 @@ fun createAuction(auctionRepository: AuctionRepository): Auction {
         "Toy",
         "Very rare")
     auction.item = itemId
+    auctionRepository.save(auction)
+    return auction
+}
+
+fun createAuctionForSeller(sellerId: String,
+                           auctionRepository: AuctionRepository,
+                           bidFactory: BidFactory,
+                           bidRepository: BidRepository): Auction {
+    val auctionId = UUID.randomUUID()
+    val auction = Auction(auctionId,
+        LocalDateTime.of(2020,1,1,12,0,0),
+        Duration.ofDays(3),
+        BigDecimal(100),
+        BigDecimal(5),
+        sellerId,
+        AuctionCategory("Toy"),
+        false
+    )
+    auction.fee = BigDecimal(10)
+    val itemId = UUID.randomUUID()
+    val item = Item(itemId,
+        "Toy",
+        "Very rare")
+    auction.item = itemId
+    val buyerId = "buyerId"
+    val bid1 = auction.createBid(
+        BidCreateDto(BigDecimal(125),
+            LocalDateTime.now(),
+            buyerId),
+        bidFactory,
+        bidRepository
+    )
     auctionRepository.save(auction)
     return auction
 }

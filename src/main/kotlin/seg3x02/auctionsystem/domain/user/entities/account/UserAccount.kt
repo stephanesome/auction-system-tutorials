@@ -4,6 +4,7 @@ import seg3x02.auctionsystem.application.services.CreditService
 import seg3x02.auctionsystem.application.services.DomainEventEmitter
 import seg3x02.auctionsystem.domain.user.entities.creditCard.CreditCard
 import seg3x02.auctionsystem.domain.user.events.UserCreditCardSet
+import java.math.BigDecimal
 import java.util.*
 
 class UserAccount(
@@ -22,6 +23,15 @@ class UserAccount(
 
     fun addBid(bidId: UUID) {
         bids.add(bidId)
+    }
+
+    fun addPendingPayment(amt: BigDecimal) {
+        pendingPayment = if (pendingPayment == null) {
+            PendingPayment(amt)
+        } else {
+            val oldAmount = pendingPayment!!.amount
+            PendingPayment(oldAmount.add(amt))
+        }
     }
 
     fun setCreditCard(
@@ -49,7 +59,7 @@ class UserAccount(
         }
     }
 
-    fun removePendingPayment() {
+    private fun removePendingPayment() {
         pendingPayment = null
     }
 }

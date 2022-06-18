@@ -60,7 +60,7 @@ class CreateAuctionStepDefs: En {
             Assertions.assertThat(seller?.pendingPayment).isNull()
         }
         Given("the seller has a credit card") {
-            seller?.let { addCreditCardToAccount(it) }
+            seller?.let { addCreditCardToAccount(it, creditCardRepository) }
             Assertions.assertThat(seller?.creditCardNumber).isNotNull
         }
         Given("auction information is provided") {
