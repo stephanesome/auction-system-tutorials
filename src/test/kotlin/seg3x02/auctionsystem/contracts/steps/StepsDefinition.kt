@@ -1,7 +1,6 @@
 package seg3x02.auctionsystem.contracts.steps
 
 import io.cucumber.java8.En
-import io.cucumber.java8.PendingException
 import io.cucumber.java8.Scenario
 import org.assertj.core.api.Assertions
 import org.mockito.Mock
