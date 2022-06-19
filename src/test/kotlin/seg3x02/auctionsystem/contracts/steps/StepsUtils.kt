@@ -29,33 +29,6 @@ fun createAccount(accountRepository: AccountRepository): UserAccount {
     return acc
 }
 
-fun createAccountWithCC(accountRepository: AccountRepository,
-                        creditCardRepository: CreditCardRepository): UserAccount {
-    // create seller
-    val sellerId = "sellerId"
-    val seller = UserAccount(sellerId,
-        "Toto",
-        "Tata",
-        "passwd",
-        "toto@somewhere.com"
-    )
-    val sellercc = CreditCard("5555555",
-        Month.JUNE,
-        Year.parse("2024"),
-        "Toto",
-        "Tata",
-        Address(
-            "125 DeLa Rue",
-            "Ottawa",
-            "Canada",
-            "K0K0K0")
-    )
-    creditCardRepository.save(sellercc)
-    seller.creditCardNumber = sellercc.number
-    accountRepository.save(seller)
-    return seller
-}
-
 fun addCreditCardToAccount(account: UserAccount,
             creditCardRepository: CreditCardRepository) {
     val cc = CreditCard("5555555",
@@ -102,6 +75,15 @@ fun setCreditCardInfo(): CreditCardCreateDto {
         "Tata",
         addr
     )
+}
+
+fun setAccountInfo(): AccountCreateDto {
+    return AccountCreateDto(
+        "user77876",
+        "password",
+        "Toto",
+        "Tata",
+        "toto@somewhere.com")
 }
 
 fun createAuction(auctionRepository: AuctionRepository): Auction {
