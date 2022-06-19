@@ -7,6 +7,7 @@ import seg3x02.auctionsystem.domain.auction.factories.BidFactory
 import seg3x02.auctionsystem.domain.auction.repositories.AuctionRepository
 import seg3x02.auctionsystem.domain.auction.repositories.BidRepository
 import seg3x02.auctionsystem.domain.item.entities.Item
+import seg3x02.auctionsystem.domain.user.entities.account.PendingPayment
 import seg3x02.auctionsystem.domain.user.entities.account.UserAccount
 import seg3x02.auctionsystem.domain.user.entities.creditCard.Address
 import seg3x02.auctionsystem.domain.user.entities.creditCard.CreditCard
@@ -46,6 +47,13 @@ fun addCreditCardToAccount(account: UserAccount,
     account.creditCardNumber = cc.number
 }
 
+fun addPendingPaymentToAccount(account: UserAccount) {
+    val pendingAmount = BigDecimal(20)
+    account.pendingPayment = PendingPayment(
+        pendingAmount
+    )
+}
+
 fun setItemInfo(): ItemCreateDto {
     return ItemCreateDto("Game boy",
         "Still wrapped in")
@@ -77,6 +85,21 @@ fun setCreditCardInfo(): CreditCardCreateDto {
     )
 }
 
+fun setCreditCardUpdateInfo(): CreditCardCreateDto {
+    val addr = AddressCreateDto(
+        "125 DeLa Rue Updated",
+        "Ottawa Updated",
+        "Canada Updated",
+        "K0K0K0 Updated")
+    return CreditCardCreateDto("6666666 Updated",
+        Month.DECEMBER,
+        Year.parse("2027"),
+        "Toto Updated",
+        "Tata Updated",
+        addr
+    )
+}
+
 fun setAccountInfo(): AccountCreateDto {
     return AccountCreateDto(
         "user77876",
@@ -84,6 +107,15 @@ fun setAccountInfo(): AccountCreateDto {
         "Toto",
         "Tata",
         "toto@somewhere.com")
+}
+
+fun setUpdateAccountInfo(): AccountCreateDto {
+    return AccountCreateDto(
+        "userUpdated",
+        "passwordUpdated",
+        "TotoUpdated",
+        "TataUpdated",
+        "totoUpdated@somewhere.com")
 }
 
 fun createAuction(auctionRepository: AuctionRepository): Auction {

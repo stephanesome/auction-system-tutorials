@@ -53,6 +53,27 @@ class UserFacadeImpl(
         return true
     }
 
+    override fun updateAccount(userId: String, accountInfo: AccountCreateDto): Boolean {
+        val user = accountRepository.find(userId)
+        if (user != null) {
+            val updated = accountFactory.createAccount(accountInfo)
+            user.update(updated)
+            val ccInfo = accountInfo.creditCardInfo
+            if (ccInfo != null) {
+                val newCard: CreditCard = createCreditCard(ccInfo)
+                user.setCreditCard(newCard, eventEmitter, creditService)
+            }
+            accountRepository.save(user)
+            eventEmitter.emit(
+                UserAccountUpdated(UUID.randomUUID(),
+                    Date(),
+                    user.id)
+            )
+            return true
+        }
+        return false
+    }
+
     private fun createCreditCard(creditCardInfo: CreditCardCreateDto): CreditCard {
         val creditCard = creditCardFactory.createCreditCard(creditCardInfo)
         creditCardRepository.save(creditCard)
@@ -75,27 +96,6 @@ class UserFacadeImpl(
             user.auctions.add(auctionId)
             accountRepository.save(user)
         }
-    }
-
-    override fun updateAccount(userId: String, accountInfo: AccountCreateDto): Boolean {
-        val user = accountRepository.find(userId)
-        if (user != null) {
-            val updated = accountFactory.createAccount(accountInfo)
-            user.update(updated)
-            val ccInfo = accountInfo.creditCardInfo
-            if (ccInfo != null) {
-                val newCard: CreditCard = createCreditCard(ccInfo)
-                user.setCreditCard(newCard, eventEmitter, creditService)
-            }
-            accountRepository.save(user)
-            eventEmitter.emit(
-                UserAccountUpdated(UUID.randomUUID(),
-                Date(),
-                user.id)
-            )
-            return true
-        }
-        return false
     }
 
     override fun getPendingPayment(userId: String): PendingPayment? {

@@ -9,14 +9,8 @@ import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
 import seg3x02.auctionsystem.application.dtos.queries.*
 import seg3x02.auctionsystem.application.services.CreditService
-import seg3x02.auctionsystem.application.usecases.CloseAuction
-import seg3x02.auctionsystem.application.usecases.CreateAccount
-import seg3x02.auctionsystem.application.usecases.CreateAuction
-import seg3x02.auctionsystem.application.usecases.PlaceBid
-import seg3x02.auctionsystem.application.usecases.implementation.CloseAuctionImpl
-import seg3x02.auctionsystem.application.usecases.implementation.CreateAccountImpl
-import seg3x02.auctionsystem.application.usecases.implementation.CreateAuctionImpl
-import seg3x02.auctionsystem.application.usecases.implementation.PlaceBidImpl
+import seg3x02.auctionsystem.application.usecases.*
+import seg3x02.auctionsystem.application.usecases.implementation.*
 import seg3x02.auctionsystem.contracts.testStubs.factories.*
 import seg3x02.auctionsystem.contracts.testStubs.repositories.*
 import seg3x02.auctionsystem.contracts.testStubs.services.AuctionFeeCalculatorStub
@@ -68,6 +62,11 @@ class StepsDefinition: En {
     private var newBid: Bid? = null
     private var accountInfo: AccountCreateDto? = null
     private var newAccount: UserAccount? = null
+    private var user: UserAccount? = null
+    private var accountUpdateInfo: AccountCreateDto? = null
+    private var creditCardUpdateInfo: CreditCardCreateDto? = null
+    private var updatedCC: CreditCard? = null
+    private var updatedCCnum: String? = null
 
     init {
         Before { _: Scenario ->
@@ -161,6 +160,38 @@ class StepsDefinition: En {
             "provided account information does not include credit card information") {
             Assertions.assertThat(accountInfo?.creditCardInfo).isNull()
         }
+        Given("the user is signed in") {
+            user = createAccount(accountRepository)
+            Assertions.assertThat(user).isNotNull
+        }
+        Given("the user has pending payment") {
+            user?.let { addPendingPaymentToAccount(it) }
+            Assertions.assertThat(user?.pendingPayment).isNotNull
+        }
+        Given(
+            "the provided account update information includes credit card information"
+        ) {
+            accountUpdateInfo = setUpdateAccountInfo()
+            creditCardUpdateInfo = setCreditCardUpdateInfo()
+            accountUpdateInfo!!.creditCardInfo = creditCardUpdateInfo
+            Assertions.assertThat(accountUpdateInfo?.creditCardInfo).isNotNull
+        }
+        Given(
+            "the provided account update information does not include credit card information"
+        ) {
+            accountUpdateInfo = setUpdateAccountInfo()
+            Assertions.assertThat(accountUpdateInfo?.creditCardInfo).isNull()
+        }
+        Given("the new credit card is able to settle the pending payment") {
+            Mockito.`when`(user?.pendingPayment?.let {
+                creditService.processPayment(
+                    creditCardUpdateInfo!!.number,
+                    creditCardUpdateInfo!!.expirationMonth,
+                    creditCardUpdateInfo!!.expirationYear,
+                    it.amount
+                )
+            }).thenReturn(true)
+        }
         When("the application command addAuction is invoked") {
             val userFacade = UserFacadeImpl(accountRepository,
                 accountFactory,
@@ -226,6 +257,16 @@ class StepsDefinition: En {
                 creditService)
             val uc: CreateAccount = CreateAccountImpl(userFacade)
             accountInfo?.let { uc.createAccount(it) }
+        }
+        When("the application command updateAccount is invoked") {
+            val userFacade = UserFacadeImpl(accountRepository,
+                accountFactory,
+                creditCardRepository,
+                creditCardFactory,
+                eventEmitter,
+                creditService)
+            val uc: UpdateAccount = UpdateAccountImpl(userFacade)
+            user?.let { accountUpdateInfo?.let { it1 -> uc.updateAccount(it.id, it1) } }
         }
         Then("a new auction is created") {
             Assertions.assertThat(newAucId).isNotNull
@@ -307,6 +348,32 @@ class StepsDefinition: En {
         }
         Then("the new credit card is set as the user account credit card") {
             Assertions.assertThat(newAccount?.creditCardNumber).isEqualTo(newCCnum)
+        }
+        Then(
+            "the account properties are modified according to the account update information"
+        ) {
+            Assertions.assertThat(user?.firstname).isEqualTo(accountUpdateInfo?.firstname)
+            Assertions.assertThat(user?.email).isEqualTo(accountUpdateInfo?.email)
+        }
+        Then("an updated credit card is created") {
+            updatedCCnum = eventEmitter.retrieveCreditCardCreatedEvent().creditCardNumber
+            Assertions.assertThat(updatedCCnum).isNotNull
+        }
+        Then(
+            "the updated credit card is initialized from the credit card information"
+        ) {
+            updatedCC = updatedCCnum?.let { creditCardRepository.find(it) }
+            Assertions.assertThat(updatedCC).isNotNull
+            Assertions.assertThat(updatedCC?.number).isEqualTo(creditCardUpdateInfo?.number)
+            Assertions.assertThat(updatedCC?.accountFirstname).isEqualTo(creditCardUpdateInfo?.accountFirstname)
+            Assertions.assertThat(updatedCC?.accountAddress?.city).isEqualTo(creditCardUpdateInfo?.accountAddress?.city)
+
+        }
+        Then("the updated credit card is set as the user account credit card") {
+            Assertions.assertThat(user?.creditCardNumber).isEqualTo(updatedCC?.number)
+        }
+        Then("the pending payment is removed from user account") {
+            Assertions.assertThat(user?.pendingPayment).isNull()
         }
         After { _: Scenario ->
             seller = null
