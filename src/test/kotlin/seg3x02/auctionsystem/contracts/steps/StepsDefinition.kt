@@ -192,6 +192,16 @@ class StepsDefinition: En {
                 )
             }).thenReturn(true)
         }
+        Given("the user account is active") {
+            user = createAccount(accountRepository)
+            Assertions.assertThat(user!!.active).isTrue()
+        }
+        Given("the user account has no pending payment") {
+            Assertions.assertThat(user!!.pendingPayment).isNull()
+        }
+        Given("the user account is not linked to an open auction") {
+            Assertions.assertThat(user!!.auctions).isEmpty()
+        }
         When("the application command addAuction is invoked") {
             val userFacade = UserFacadeImpl(accountRepository,
                 accountFactory,
@@ -267,6 +277,22 @@ class StepsDefinition: En {
                 creditService)
             val uc: UpdateAccount = UpdateAccountImpl(userFacade)
             user?.let { accountUpdateInfo?.let { it1 -> uc.updateAccount(it.id, it1) } }
+        }
+        When("application command deactivateAccount is invoked") {
+            val userFacade = UserFacadeImpl(accountRepository,
+                accountFactory,
+                creditCardRepository,
+                creditCardFactory,
+                eventEmitter,
+                creditService)
+            val auctionFacade = AuctionFacadeImpl(
+                auctionFactory,
+                auctionRepository,
+                bidFactory,
+                bidRepository,
+                eventEmitter)
+            val uc: DeactivateAccount = DeactivateAccountImpl(userFacade, auctionFacade, emailService)
+            user?.let { uc.deactivateAccount(it.id) }
         }
         Then("a new auction is created") {
             Assertions.assertThat(newAucId).isNotNull
@@ -375,6 +401,9 @@ class StepsDefinition: En {
         Then("the pending payment is removed from user account") {
             Assertions.assertThat(user?.pendingPayment).isNull()
         }
+        Then("the user account is marked as inactive") {
+            user?.let { Assertions.assertThat(it.active).isFalse() }
+        }
         After { _: Scenario ->
             seller = null
             itemInfo = null
@@ -386,6 +415,18 @@ class StepsDefinition: En {
             newItem = null
             newCCnum = null
             newCC = null
+            buyer = null
+            auction = null
+            bidInfo = null
+            newBidId = null
+            newBid = null
+            accountInfo = null
+            newAccount = null
+            user = null
+            accountUpdateInfo = null
+            creditCardUpdateInfo = null
+            updatedCC = null
+            updatedCCnum = null
 
             accountRepository = AccountRepositoryStub()
             itemRepository = ItemRepositoryStub()
