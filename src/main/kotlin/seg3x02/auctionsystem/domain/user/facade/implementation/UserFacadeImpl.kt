@@ -9,6 +9,7 @@ import seg3x02.auctionsystem.domain.user.entities.account.PendingPayment
 import seg3x02.auctionsystem.domain.user.entities.creditCard.CreditCard
 import seg3x02.auctionsystem.domain.user.events.CreditCardCreated
 import seg3x02.auctionsystem.domain.user.events.UserAccountCreated
+import seg3x02.auctionsystem.domain.user.events.UserAccountDeactivated
 import seg3x02.auctionsystem.domain.user.events.UserAccountUpdated
 import seg3x02.auctionsystem.domain.user.facade.UserFacade
 import seg3x02.auctionsystem.domain.user.factories.AccountFactory
@@ -130,6 +131,31 @@ class UserFacadeImpl(
                 userId)
             eventEmitter.emit(addBidEvent)
         }
+    }
+
+    override fun deactivateAccount(userId: String): Boolean {
+        val user = accountRepository.find(userId)
+        if (user != null) {
+            user.deactivate()
+            eventEmitter.emit(
+                UserAccountDeactivated(
+                UUID.randomUUID(),
+                Date(),
+                user.id
+            )
+            )
+            return true
+        }
+        return false
+    }
+
+    override fun getUserAuctions(userId: String): List<UUID> {
+        val auctionList = ArrayList<UUID>()
+        val user = accountRepository.find(userId)
+        if (user != null) {
+            auctionList.addAll(user.auctions)
+        }
+        return auctionList
     }
 
 }

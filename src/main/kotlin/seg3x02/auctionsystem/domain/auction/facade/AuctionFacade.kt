@@ -12,4 +12,5 @@ interface AuctionFacade {
     fun placeBid(auctionId: UUID, bidInfo: BidCreateDto): UUID?
     fun setAuctionFee(auctionId: UUID, fee: BigDecimal)
     fun getAuctionFee(auctionId: UUID): BigDecimal?
+    fun includesAuctionsInProgress(auctionIds: List<UUID>): Boolean
 }

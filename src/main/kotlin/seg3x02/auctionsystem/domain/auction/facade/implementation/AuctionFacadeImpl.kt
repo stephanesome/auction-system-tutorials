@@ -74,4 +74,12 @@ class AuctionFacadeImpl(
             bidId
         } else null
     }
+
+    override fun includesAuctionsInProgress(auctionIds: List<UUID>): Boolean {
+        for (auc in auctionIds) {
+            val auction = auctionRepository.find(auc)
+            if (auction != null && ! auction.isclosed) return true
+        }
+        return false
+    }
 }

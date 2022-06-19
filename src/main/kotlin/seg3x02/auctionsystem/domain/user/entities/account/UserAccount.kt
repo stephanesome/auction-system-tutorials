@@ -68,4 +68,8 @@ class UserAccount(
     private fun removePendingPayment() {
         pendingPayment = null
     }
+
+    fun deactivate() {
+        this.active = false
+    }
 }

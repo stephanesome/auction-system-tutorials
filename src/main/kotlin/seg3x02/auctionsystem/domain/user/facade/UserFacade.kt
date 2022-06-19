@@ -19,4 +19,6 @@ interface UserFacade {
     fun addBidToAccount(userId: String, bidId: UUID)
     fun createAccount(accountInfo: AccountCreateDto): Boolean
     fun updateAccount(userId: String, accountInfo: AccountCreateDto): Boolean
+    fun deactivateAccount(userId: String): Boolean
+    fun getUserAuctions(userId: String): List<UUID>
 }
