@@ -9,6 +9,7 @@ import seg3x02.auctionsystem.domain.user.entities.account.PendingPayment
 import seg3x02.auctionsystem.domain.user.entities.creditCard.CreditCard
 import seg3x02.auctionsystem.domain.user.events.CreditCardCreated
 import seg3x02.auctionsystem.domain.user.events.UserAccountCreated
+import seg3x02.auctionsystem.domain.user.events.UserAccountUpdated
 import seg3x02.auctionsystem.domain.user.facade.UserFacade
 import seg3x02.auctionsystem.domain.user.factories.AccountFactory
 import seg3x02.auctionsystem.domain.user.factories.CreditCardFactory
@@ -74,6 +75,27 @@ class UserFacadeImpl(
             user.auctions.add(auctionId)
             accountRepository.save(user)
         }
+    }
+
+    override fun updateAccount(userId: String, accountInfo: AccountCreateDto): Boolean {
+        val user = accountRepository.find(userId)
+        if (user != null) {
+            val updated = accountFactory.createAccount(accountInfo)
+            user.update(updated)
+            val ccInfo = accountInfo.creditCardInfo
+            if (ccInfo != null) {
+                val newCard: CreditCard = createCreditCard(ccInfo)
+                user.setCreditCard(newCard, eventEmitter, creditService)
+            }
+            accountRepository.save(user)
+            eventEmitter.emit(
+                UserAccountUpdated(UUID.randomUUID(),
+                Date(),
+                user.id)
+            )
+            return true
+        }
+        return false
     }
 
     override fun getPendingPayment(userId: String): PendingPayment? {

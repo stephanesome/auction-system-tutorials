@@ -18,4 +18,5 @@ interface UserFacade {
     fun addPendingPayment(userId: String, amt: BigDecimal)
     fun addBidToAccount(userId: String, bidId: UUID)
     fun createAccount(accountInfo: AccountCreateDto): Boolean
+    fun updateAccount(userId: String, accountInfo: AccountCreateDto): Boolean
 }

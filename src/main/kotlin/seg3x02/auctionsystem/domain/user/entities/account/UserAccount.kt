@@ -59,6 +59,12 @@ class UserAccount(
         }
     }
 
+    fun update(updated: UserAccount) {
+        firstname = updated.firstname
+        lastname = updated.lastname
+        email = updated.email
+    }
+
     private fun removePendingPayment() {
         pendingPayment = null
     }
