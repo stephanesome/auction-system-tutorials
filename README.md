@@ -1,1 +1,1 @@
-# auction-system-tutorials
+# Example of Domain Driven Development
