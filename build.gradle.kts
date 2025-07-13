@@ -25,7 +25,9 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	testImplementation("org.junit.platform:junit-platform-suite:1.13.3")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-test") {
+		exclude(module = "mockito-core")
+	}
 	testImplementation("io.cucumber:cucumber-java8:7.24.0")
 	testImplementation("io.cucumber:cucumber-spring:7.24.0")
 	testImplementation("io.cucumber:cucumber-junit-platform-engine:7.24.0")
