@@ -3,16 +3,13 @@ package seg3x02.auctionsystem.contracts.steps
 import io.cucumber.java8.En
 import io.cucumber.java8.Scenario
 import org.assertj.core.api.Assertions
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
 import seg3x02.auctionsystem.application.dtos.queries.*
-import seg3x02.auctionsystem.application.services.CreditService
 import seg3x02.auctionsystem.application.usecases.*
 import seg3x02.auctionsystem.application.usecases.implementation.*
 import seg3x02.auctionsystem.contracts.testStubs.factories.*
 import seg3x02.auctionsystem.contracts.testStubs.repositories.*
 import seg3x02.auctionsystem.contracts.testStubs.services.AuctionFeeCalculatorStub
+import seg3x02.auctionsystem.contracts.testStubs.services.CreditServiceStub
 import seg3x02.auctionsystem.contracts.testStubs.services.EmailServiceStub
 import seg3x02.auctionsystem.contracts.testStubs.services.EventEmitterStub
 import seg3x02.auctionsystem.domain.auction.entities.Auction
@@ -41,9 +38,7 @@ class StepsDefinition: En {
     private var eventEmitter = EventEmitterStub()
     private var emailService = EmailServiceStub()
     private var auctionFeeCalculator = AuctionFeeCalculatorStub()
-    @Mock
-    private lateinit var creditService: CreditService
-
+    private var creditService = CreditServiceStub()
     private var seller: UserAccount? = null
     private var itemInfo: ItemCreateDto? = null
     private var auctionInfo: AuctionCreateDto? = null
@@ -68,9 +63,6 @@ class StepsDefinition: En {
     private var updatedCCnum: String? = null
 
     init {
-        Before { _: Scenario ->
-            MockitoAnnotations.openMocks(this)
-        }
         Given("the seller is signed in") {
             seller = createAccount(accountRepository)
             Assertions.assertThat(seller).isNotNull
@@ -125,12 +117,7 @@ class StepsDefinition: En {
             seller?.let { addCreditCardToAccount(it, creditCardRepository) }
             Assertions.assertThat(seller?.creditCardNumber).isNotNull
             val cc = seller?.creditCardNumber?.let { creditCardRepository.find(it) }
-            Mockito.`when`(creditService.processPayment(
-                cc!!.number,
-                cc.expirationMonth,
-                cc.expirationYear,
-                auction!!.fee
-            )).thenReturn(true)
+            creditService.setReturnVal(returnVal = true)
         }
         Given(
             "the auction seller credit card is unable to settle the auction fee"
@@ -138,12 +125,7 @@ class StepsDefinition: En {
             seller?.let { addCreditCardToAccount(it, creditCardRepository) }
             Assertions.assertThat(seller?.creditCardNumber).isNotNull
             val cc = seller?.creditCardNumber?.let { creditCardRepository.find(it) }
-            Mockito.`when`(creditService.processPayment(
-                cc!!.number,
-                cc.expirationMonth,
-                cc.expirationYear,
-                auction!!.fee
-            )).thenReturn(false)
+            creditService.setReturnVal(returnVal = false)
         }
         Given("provided account information doesn't match an existing user account") {
             accountInfo = setAccountInfo()
@@ -182,14 +164,7 @@ class StepsDefinition: En {
             Assertions.assertThat(accountUpdateInfo?.creditCardInfo).isNull()
         }
         Given("the new credit card is able to settle the pending payment") {
-            Mockito.`when`(user?.pendingPayment?.let {
-                creditService.processPayment(
-                    creditCardUpdateInfo!!.number,
-                    creditCardUpdateInfo!!.expirationMonth,
-                    creditCardUpdateInfo!!.expirationYear,
-                    it.amount
-                )
-            }).thenReturn(true)
+            creditService.setReturnVal(returnVal = true)
         }
         Given("the user account is active") {
             user = createAccount(accountRepository)

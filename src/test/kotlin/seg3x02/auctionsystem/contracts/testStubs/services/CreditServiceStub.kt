@@ -6,13 +6,17 @@ import java.time.Month
 import java.time.Year
 
 class CreditServiceStub : CreditService {
+    private var returnVal: Boolean = true
     override fun processPayment(
         number: String,
         expirationMonth: Month,
         expirationYear: Year,
         amt: BigDecimal
     ): Boolean {
-        return true
+        return returnVal
     }
 
+    fun setReturnVal(returnVal: Boolean) {
+        this.returnVal = returnVal
+    }
 }
